@@ -1,29 +1,35 @@
 import numpy as np
 import cv2
 import cv2.cv as cv
-import math
 import scipy.stats
+import os
+import sys
 from time import time
 
-print "RAViF : RApid Video Fingerprinter 3.0 - butterflo"
-print "-------------------------------------------------"
+print "RAViF : RApid Video Fingerprinter"
+print "---------------------------------------------"
 
 blocks = 64
+mbunit = 1048576
 
 while blocks <= 192:
     f = open("input.txt","r")
     liststr = []
+    filesizes = []
+    netfilesize = 0
     while True:
         path = f.readline()
         if not path: break
         liststr.append(path.rstrip())
+        filesize = os.path.getsize(path.rstrip())
+        netfilesize += filesize
+        filesizes.append(filesize)
     f.close()
 
-    #bits = 8
-    #blocks = 1 << bits
-    #print "processing " + str(len(liststr)) + " files"
-    #print "depth: " + str(bits) + " bits"
-    print "hash length: " + str(blocks * 6)
+    bits = 8
+    blocks = 1 << bits
+    print "processing " + str(len(liststr)) + " files (" + str(netfilesize / mbunit) + " MB)"
+    print "hash depth: " + str(bits) + " bits\n"
 
     o = open("output.txt","w",0)
 
@@ -32,7 +38,6 @@ while blocks <= 192:
     for c in range(len(liststr)):
 
         file_start = time()
-        
         cap = cv2.VideoCapture(liststr[c])
         
         frame_count = int(cap.get(cv.CV_CAP_PROP_FRAME_COUNT))
@@ -42,7 +47,7 @@ while blocks <= 192:
         fp_G = ""
         fp_B = ""
 
-        #print "filename: " + liststr[c] + " ( " + str(frame_count) + " frames )"
+        msg = "[" + str(c) + "/" + str(len(liststr)) + "] " + liststr[c] + " (" + str(filesizes[c]/mbunit) + "MB)"
 
         for i in range(blocks):
             pos = int(i * unit_pos)
@@ -54,6 +59,10 @@ while blocks <= 192:
             fp_R = fp_R + ("%0.2x" % px[0])
             fp_G = fp_G + ("%0.2x" % px[1])
             fp_B = fp_B + ("%0.2x" % px[2])
+
+            sys.stdout.write(msg + " %d%%    \r" % ((i+1)*100/blocks))
+            sys.stdout.flush()
+        sys.stdout.write("\n")
         cap.release()
         fp = fp_R + fp_G + fp_B
 
@@ -62,7 +71,7 @@ while blocks <= 192:
 	speed.append(file_done - file_start)
     o.close()
 
-    #print "processed in " + str(runtime) + " seconds"
+    print "processed in " + str(runtime) + " seconds"
 
     f = open("output.txt","r")
     fp = []
@@ -90,7 +99,6 @@ while blocks <= 192:
 
         for i in range(fp_length):
             v = int(fp[c][i*2:i*2+2],16)
-            #print v
             fpi.append(v)
 
         chR.append(fpi[0:fp_blocks])
@@ -123,6 +131,4 @@ while blocks <= 192:
         o.write(str(speed[x]) + ",")
     o.close()
 
-    #print "eval ok"
-
-    blocks += 16
+    print "eval ok"

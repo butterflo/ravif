@@ -1,4 +1,4 @@
 @echo off
 color 6F
-python radif.py
+python ravif.py
 pause
