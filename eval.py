@@ -1,10 +1,10 @@
-import numpy as np
-import scipy.stats
 import os
 import sys
+import numpy as np
 from time import time
-from base64 import b64encode, b64decode
-from binascii import hexlify, unhexlify
+from base64 import b64decode
+from binascii import hexlify
+from scipy.stats import pearsonr
 
 print "RAViF : RApid Video Fingerprinter"
 print "---------------------------------------------"
@@ -56,12 +56,11 @@ for x in range(len(chR)):
     o.write(liststr[x] + ",")
     for y in range(len(chR)):
         if y <= x:
-            cor_r = scipy.stats.pearsonr(chR[x],chR[y])
-            cor_g = scipy.stats.pearsonr(chG[x],chG[y])
-            cor_b = scipy.stats.pearsonr(chB[x],chB[y])
+            cor_r = pearsonr(chR[x],chR[y])            
+            cor_g = pearsonr(chG[x],chG[y])
+            cor_b = pearsonr(chB[x],chB[y])
 
-            si = (cor_r[0] + cor_g[0] + cor_b[0])/3
-            print str(cor_r[0]), str(1-cor_r[1])
+            si = abs(cor_r[0] + cor_g[0] + cor_b[0])/3
             o.write(str(si) + ",")
     o.write("\n")
 o.close()
