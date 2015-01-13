@@ -7,6 +7,7 @@ RAViF is an proof-of-idea implementation of video fingerprinting algorithm I am 
 ### Dependencies
 - opencv
 - numpy
+- scipy
 
 ### Files
 
